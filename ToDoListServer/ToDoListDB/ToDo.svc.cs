@@ -132,7 +132,7 @@ namespace ToDoList
             // debugging easier.
         }
 
-        public string AddItem(ToDoItem item)
+        public string AddItem(Item item)
         {
             if (item.UserID == null)
             {
@@ -173,7 +173,7 @@ namespace ToDoList
                     {
                         command.Parameters.AddWithValue("@UserID", item.UserID);
                         command.Parameters.AddWithValue("@Desc", item.Description.Trim());
-                        command.Parameters.AddWithValue("@Completed", item.Completed);
+                        command.Parameters.AddWithValue("@Completed", false);
 
                         // We execute the command with the ExecuteScalar method, which will return to
                         // us the requested auto-generated ItemID.

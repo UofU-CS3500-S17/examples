@@ -9,8 +9,9 @@ using static System.Net.HttpStatusCode;
 namespace ToDoList
 {
     /// <summary>
-    /// Provides implementations of the operations belonging to the service.
+    /// Provides implementations of the service methods belonging to the service.
     /// </summary>
+    /// <seealso cref="ToDoList.IToDo" />
     public class ToDo : IToDo
     {
         // This amounts to a "poor man's" database.  The state of the service is
@@ -54,7 +55,7 @@ namespace ToDoList
             }
         }
 
-        public string AddItem(ToDoItem item)
+        public string AddItem(Item item)
         {
             lock (sync)
             {
@@ -66,8 +67,14 @@ namespace ToDoList
                 else
                 {
                     string itemID = Guid.NewGuid().ToString();
-                    item.ItemID = itemID;
-                    items.Add(itemID, item);
+                    ToDoItem toDoItem = new ToDoItem()
+                    {
+                        UserID = item.UserID,
+                        Description = item.Description,
+                        ItemID = itemID,
+                        Completed = false
+                    };
+                    items.Add(itemID, toDoItem);
                     SetStatus(Created);
                     return itemID;
                 }
@@ -105,7 +112,6 @@ namespace ToDoList
                 }
             }
         }
-
 
         public IList<ToDoItem> GetAllItems(bool completedOnly, string userID)
         {

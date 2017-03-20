@@ -25,7 +25,7 @@ namespace ToDoList
         /// Othewise, adds the item to the list, returns the new ItemID, and responds with status code Created.
         /// </summary>
         [WebInvoke(Method = "POST", UriTemplate = "/AddItem")]
-        string AddItem(ToDoItem item);
+        string AddItem(Item item);
 
         /// <summary>
         /// Marks an item as completed.
