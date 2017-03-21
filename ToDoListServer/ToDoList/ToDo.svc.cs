@@ -136,5 +136,13 @@ namespace ToDoList
                 }
             }
         }
+
+        /// <summary>
+        /// Class demo.
+        /// </summary>
+        public ScoreThing PlayWord(WordThing word, string gameID)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

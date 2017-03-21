@@ -55,5 +55,10 @@ namespace ToDoList
         /// </summary>
         [WebGet(UriTemplate = "/GetAllItems?completed={completedOnly}&user={userID}")]
         IList<ToDoItem> GetAllItems(bool completedOnly, string userID);
+
+        // This is an example done in class that would work for
+        // the Boggle API.
+        [WebInvoke(Method = "PUT", UriTemplate = "/games/{gameID}")]
+        ScoreThing PlayWord(WordThing word, string gameID);
     }
 }

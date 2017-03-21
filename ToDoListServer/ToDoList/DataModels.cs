@@ -31,4 +31,17 @@ namespace ToDoList
 
         public string ItemID { get; set; }
     }
+
+    // Class demo
+    public class WordThing
+    {
+        public string UserToken { get; set; }
+        public string Word { get; set; }
+    }
+
+    // Class demo
+    public class ScoreThing
+    {
+        public string Score { get; set; }
+    }
 }
