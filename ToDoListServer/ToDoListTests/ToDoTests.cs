@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rest;
 using System.Dynamic;
 using static System.Net.HttpStatusCode;
@@ -65,6 +64,9 @@ namespace UnitTestProject1
             IISAgent.Stop();
         }
 
+        /// <summary>
+        /// This client is used in all the test cases.
+        /// </summary>
         private RestClient client = new RestClient("http://localhost:50000/");
 
         [TestMethod]

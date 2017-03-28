@@ -81,7 +81,7 @@ namespace ToDoList
                     // tempted to simply paste the values into the string, but this is a BAD IDEA that violates
                     // a cardinal rule of DB Security 101.  By using the placeholder approach, you don't have
                     // to worry about escaping special characters and you don't have to worry about one form
-                    // of the SQL insertion attack.
+                    // of the SQL injection attack.
                     using (SqlCommand command =
                         new SqlCommand("insert into Users (UserID, Name, Email) values(@UserID, @Nickname, @Email)",
                                         conn,
