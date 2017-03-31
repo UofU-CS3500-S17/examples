@@ -14,7 +14,7 @@ namespace Chat
         static void Main(string[] args)
         {
             new SimpleChatServer(4000);
-            //Console.ReadLine();
+            Console.ReadLine();
         }
 
         // Listens for incoming connection requests
