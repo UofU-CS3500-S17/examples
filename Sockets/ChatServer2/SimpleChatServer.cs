@@ -2,7 +2,7 @@
 using System.Text;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;   // ReaderWriterLockSlim
+using System.Threading;
 using System.Collections.Generic;
 
 namespace Chat
@@ -22,7 +22,11 @@ namespace Chat
         // Listens for incoming connection requests
         private TcpListener server;
 
+        // All the clients that have connected but haven't closed
         private List<ClientConnection> clients = new List<ClientConnection>();
+
+        // Read/write lock to coordinate access to the clients list
+        private readonly ReaderWriterLockSlim sync = new ReaderWriterLockSlim();
 
         /// <summary>
         /// Creates a SimpleChatServer that listens for connection requests on port 4000.
@@ -57,7 +61,8 @@ namespace Chat
             server.BeginAcceptSocket(ConnectionRequested, null);
 
             // We create a new ClientConnection, which will take care of communicating with
-            // the remote client.
+            // the remote client.  We add the new client to the list of clients, taking 
+            // care to use a write lock.
             try
             {
                 sync.EnterWriteLock();
@@ -69,10 +74,13 @@ namespace Chat
             }
         }
 
-        private readonly ReaderWriterLockSlim sync = new ReaderWriterLockSlim();
-
+        /// <summary>
+        /// Sends the message to all clients
+        /// </summary>
         public void SendToAllClients(string msg)
         {
+            // Here we use a read lock to access the clients list, which allows concurrent
+            // message sending.
             try
             {
                 sync.EnterReadLock();
@@ -86,13 +94,29 @@ namespace Chat
                 sync.ExitReadLock();
             }
         }
+
+        /// <summary>
+        /// Remove c from the client list.
+        /// </summary>
+        public void RemoveClient(ClientConnection c)
+        {
+            try
+            {
+                sync.EnterWriteLock();
+                clients.Remove(c);
+            }
+            finally
+            {
+                sync.ExitWriteLock();
+            }
+        }
     }
 
     /// <summary>
     /// Represents a connection with a remote client.  Takes care of receiving and sending
     /// information to that client according to the protocol.
     /// </summary>
-    class ClientConnection
+    public class ClientConnection
     {
         // Incoming/outgoing is UTF8-encoded.  This is a multi-byte encoding.  The first 128 Unicode characters
         // (which corresponds to the old ASCII character set and contains the common keyboard characters) are
@@ -138,15 +162,21 @@ namespace Chat
         /// </summary>
         public ClientConnection(Socket s, SimpleChatServer server)
         {
+            // Record the socket and server and initialize incoming/outgoing
             this.server = server;
-            // Record the socket and clear incoming
             socket = s;
             incoming = new StringBuilder();
             outgoing = new StringBuilder();
 
-            // Ask the socket to call MessageReceive as soon as up to 1024 bytes arrive.
-            socket.BeginReceive(incomingBytes, 0, incomingBytes.Length,
-                                SocketFlags.None, MessageReceived, null);
+            try
+            {
+                // Ask the socket to call MessageReceive as soon as up to 1024 bytes arrive.
+                socket.BeginReceive(incomingBytes, 0, incomingBytes.Length,
+                                    SocketFlags.None, MessageReceived, null);
+            }
+            catch (ObjectDisposedException)
+            {
+            }
         }
 
         /// <summary>
@@ -162,6 +192,7 @@ namespace Chat
             if (bytesRead == 0)
             {
                 Console.WriteLine("Socket closed");
+                server.RemoveClient(this);
                 socket.Close();
             }
 
@@ -196,9 +227,15 @@ namespace Chat
                 }
                 incoming.Remove(0, lastNewline + 1);
 
-                // Ask for some more data
-                socket.BeginReceive(incomingBytes, 0, incomingBytes.Length,
-                    SocketFlags.None, MessageReceived, null);
+                try
+                {
+                    // Ask for some more data
+                    socket.BeginReceive(incomingBytes, 0, incomingBytes.Length,
+                        SocketFlags.None, MessageReceived, null);
+                }
+                catch (ObjectDisposedException)
+                {
+                }
             }
         }
 
@@ -232,8 +269,14 @@ namespace Chat
             // keep doing that.
             if (pendingIndex < pendingBytes.Length)
             {
-                socket.BeginSend(pendingBytes, pendingIndex, pendingBytes.Length - pendingIndex,
-                                 SocketFlags.None, MessageSent, null);
+                try
+                {
+                    socket.BeginSend(pendingBytes, pendingIndex, pendingBytes.Length - pendingIndex,
+                                     SocketFlags.None, MessageSent, null);
+                }
+                catch (ObjectDisposedException)
+                {
+                }
             }
 
             // If we're not currently dealing with a block of bytes, make a new block of bytes
@@ -243,8 +286,14 @@ namespace Chat
                 pendingBytes = encoding.GetBytes(outgoing.ToString());
                 pendingIndex = 0;
                 outgoing.Clear();
-                socket.BeginSend(pendingBytes, 0, pendingBytes.Length,
-                                 SocketFlags.None, MessageSent, null);
+                try
+                {
+                    socket.BeginSend(pendingBytes, 0, pendingBytes.Length,
+                                     SocketFlags.None, MessageSent, null);
+                }
+                catch (ObjectDisposedException)
+                {
+                }
             }
 
             // If there's nothing to send, shut down for the time being.
@@ -269,6 +318,7 @@ namespace Chat
                 if (bytesSent == 0)
                 {
                     socket.Close();
+                    server.RemoveClient(this);
                     Console.WriteLine("Socket closed");
                 }
 
