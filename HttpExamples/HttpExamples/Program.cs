@@ -1,10 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace HttpExamples
 {
@@ -16,7 +12,7 @@ namespace HttpExamples
         public static void Main(string[] args)
         {
             // Recognize that a URL maps to a service method and extract parameters
-            Regex r = new Regex(@"^/BoggleService.svc/games/(\d*)$");
+            Regex r = new Regex(@"^/BoggleService.svc/games/(G\d+)$");
 
             string url1 = "/BoggleService.svc/games";
             Match m1 = r.Match(url1);
@@ -29,7 +25,7 @@ namespace HttpExamples
                 Console.WriteLine(url1 + " doesn't match");
             }
 
-            string url2 = "/BoggleService.svc/games/187";
+            string url2 = "/BoggleService.svc/games/G187877787";
             Match m2 = r.Match(url2);
             if (m2.Success)
             {
