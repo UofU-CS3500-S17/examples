@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace Chat
 {
-    public class SimpleChatServer
+    public class SimpleChatServer2
     {
         /// <summary>
         /// Launches a SimpleChatServer on port 4000.  Keeps the main
@@ -15,7 +15,7 @@ namespace Chat
         /// </summary>
         static void Main(string[] args)
         {
-            new SimpleChatServer(4000);
+            new SimpleChatServer2(4000);
             Console.ReadLine();
         }
 
@@ -31,7 +31,7 @@ namespace Chat
         /// <summary>
         /// Creates a SimpleChatServer that listens for connection requests on port 4000.
         /// </summary>
-        public SimpleChatServer(int port)
+        public SimpleChatServer2(int port)
         {
             // A TcpListener listens for incoming connection requests
             server = new TcpListener(IPAddress.Any, port);
@@ -155,12 +155,12 @@ namespace Chat
 
         // Name of chatter or null if unknown
         private string name = null;
-        private SimpleChatServer server;
+        private SimpleChatServer2 server;
 
         /// <summary>
         /// Creates a ClientConnection from the socket, then begins communicating with it.
         /// </summary>
-        public ClientConnection(Socket s, SimpleChatServer server)
+        public ClientConnection(Socket s, SimpleChatServer2 server)
         {
             // Record the socket and server and initialize incoming/outgoing
             this.server = server;

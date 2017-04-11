@@ -149,6 +149,8 @@ namespace Chat
                     if (incoming[i] == '\n')
                     {
                         String line = incoming.ToString(start, i + 1 - start);
+
+
                         SendMessage(line.ToUpper());
                         lastNewline = i;
                         start = i + 1;
